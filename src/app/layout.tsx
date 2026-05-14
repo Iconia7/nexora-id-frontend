@@ -39,6 +39,11 @@ export const metadata: Metadata = {
     images: ["/brand/logo.png"],
   },
   metadataBase: new URL("https://accounts.nexoracreatives.co.ke"),
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/favicon.ico",
+    apple: "/icon.png",
+  },
 };
 
 import { ToastProvider } from "@/components/ui/Toast";
