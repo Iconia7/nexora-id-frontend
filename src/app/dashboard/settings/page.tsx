@@ -34,11 +34,11 @@ export default function SettingsPage() {
       setMarketingEmails(data.marketingEmails);
       setSecurityEmails(data.securityEmails);
     } catch (error) {
-      showToast("Failed to load profile", "error");
+      console.error("Failed to load profile");
     } finally {
       setIsLoading(false);
     }
-  }, [showToast]);
+  }, []);
 
   React.useEffect(() => {
     fetchProfile();
