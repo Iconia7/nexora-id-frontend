@@ -24,11 +24,11 @@ export default function DeveloperPage() {
       const data = await apiFetch("/api/developer/apps");
       setApps(data);
     } catch (error) {
-      showToast("Failed to load applications", "error");
+      console.error("Failed to load applications");
     } finally {
       setIsLoading(false);
     }
-  }, [showToast]);
+  }, []);
 
   React.useEffect(() => {
     fetchApps();
