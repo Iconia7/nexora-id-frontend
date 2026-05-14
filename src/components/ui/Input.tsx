@@ -2,44 +2,35 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
   error?: string;
+  rightElement?: React.ReactNode;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, type, ...props }, ref) => {
-    const [isFocused, setIsFocused] = React.useState(false);
-    const hasValue = props.value || props.defaultValue;
-
+  ({ className, error, type, rightElement, ...props }, ref) => {
     return (
-      <div className="relative w-full mb-4">
-        <div className={cn(
-          "relative flex items-center rounded-2xl border bg-white transition-all duration-200",
-          isFocused ? "border-amber-600 ring-2 ring-amber-500/10 shadow-sm" : "border-slate-200",
-          error && "border-red-500 ring-red-500/10",
-          className
-        )}>
-          <input
-            {...props}
-            type={type}
-            ref={ref}
-            onFocus={() => setIsFocused(true)}
-            onBlur={(e) => {
-              setIsFocused(false);
-              props.onBlur?.(e);
-            }}
-            className="peer w-full px-4 pt-6 pb-2 text-slate-900 placeholder-transparent outline-none bg-transparent"
-            placeholder={label}
-          />
-          <label className={cn(
-            "absolute left-4 top-4 origin-[0] -translate-y-3 scale-75 transform text-slate-500 transition-all duration-200",
-            "peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-3 peer-focus:scale-75 peer-focus:text-amber-600",
-            (isFocused || hasValue) ? "-translate-y-3 scale-75 text-amber-600" : ""
-          )}>
-            {label}
-          </label>
-        </div>
-        {error && <p className="mt-1 ml-2 text-xs text-red-500">{error}</p>}
+      <div className="w-full relative group">
+        <input
+          {...props}
+          type={type}
+          ref={ref}
+          className={cn(
+            "flex h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm ring-offset-white transition-all",
+            "file:border-0 file:bg-transparent file:text-sm file:font-medium",
+            "placeholder:text-slate-400 outline-none",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#960c1d]/10 focus-visible:border-[#960c1d]/30",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            rightElement && "pr-12",
+            error && "border-red-500 focus-visible:ring-red-500/10",
+            className
+          )}
+        />
+        {rightElement && (
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center">
+            {rightElement}
+          </div>
+        )}
+        {error && <p className="mt-1.5 ml-1 text-xs text-red-500 font-medium">{error}</p>}
       </div>
     );
   }

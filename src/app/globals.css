@@ -1,26 +1,35 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --background: #f8fafc; /* bg-slate-50 */
-  --foreground: #0f172a; /* text-slate-900 */
+@theme {
+  --font-display: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   body {
-    @apply font-sans;
+    @apply font-sans bg-slate-50 text-slate-900;
   }
+  
   h1, h2, h3, h4, h5, h6 {
     @apply font-display tracking-tight;
   }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  html, body {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
 }
 
-@layer utilities {
-  .font-display {
-    font-family: var(--font-plus-jakarta), system-ui, sans-serif;
-  }
-  .font-sans {
-    font-family: var(--font-inter), system-ui, sans-serif;
-  }
+:root {
+  --background: #f8fafc;
+  --foreground: #010a26;
+  --brand-crimson: #960c1d;
+  --brand-navy: #010a26;
+  --brand-navy-light: #0d1633;
 }
