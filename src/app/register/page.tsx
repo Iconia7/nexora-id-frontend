@@ -98,7 +98,7 @@ function RegisterContent() {
             transition={{ delay: 0.2 }}
             className="text-4xl font-semibold text-white leading-tight max-w-sm pt-4"
           >
-            Empowering your <span className="text-[#960c1d]">Creative</span> journey.
+            Empowering your <span className="text-[#960c1d]">Creative</span> journey through <span className="text-[#960c1d]">Nexora ID</span>.
           </motion.h2>
 
           <div className="flex flex-row gap-8 w-full max-w-2xl pb-12">
@@ -128,7 +128,7 @@ function RegisterContent() {
           <div className="mb-8 text-center lg:text-left">
             <h1 className="text-3xl font-semibold text-[#010a26] mb-1.5 tracking-tight">Create your Nexora ID</h1>
             <p className="text-slate-500 text-sm font-medium leading-relaxed">
-              Start your journey today in a few seconds.
+              Start your Nexora journey today in a few seconds.
             </p>
           </div>
 
