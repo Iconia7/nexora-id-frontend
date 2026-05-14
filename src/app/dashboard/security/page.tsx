@@ -62,14 +62,13 @@ export default function SecurityPage() {
       setStatus(statusData);
       setSessions(sessionsData);
     } catch (error: any) {
-      // Don't show toasts for 401s (auth redirect will handle it)
       if (error.status !== 401) {
-        showToast("Failed to load security matrix", "error");
+        console.error("Failed to load security matrix");
       }
     } finally {
       setIsLoading(false);
     }
-  }, [showToast]);
+  }, []);
 
   React.useEffect(() => {
     fetchData();
@@ -155,9 +154,7 @@ export default function SecurityPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* Main Security Area */}
         <div className="lg:col-span-2 space-y-10">
-          {/* Password Section */}
           <section className="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-slate-200/40 border border-slate-100 relative overflow-hidden">
             <div className="flex items-center space-x-5 mb-10">
               <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center">
@@ -221,17 +218,10 @@ export default function SecurityPage() {
             </form>
           </section>
 
-          {/* Active Sessions List */}
           <section className="space-y-6">
             <div className="flex items-center justify-between px-2">
               <h3 className="text-lg font-semibold text-[#010a26]">Active Security Sessions</h3>
               <div className="h-[1px] flex-1 mx-6 bg-slate-100" />
-              <button 
-                onClick={() => showToast("Functionality coming soon", "info")}
-                className="text-[11px] font-semibold text-[#960c1d] uppercase tracking-widest hover:underline underline-offset-4"
-              >
-                Log out all
-              </button>
             </div>
             
             <div className="bg-white rounded-[2.5rem] border border-slate-100 overflow-hidden shadow-2xl shadow-slate-200/30">
@@ -259,7 +249,7 @@ export default function SecurityPage() {
                       <div>
                         <div className="flex items-center gap-3 mb-1">
                           <h4 className="text-sm font-semibold text-[#010a26]">
-                            {session.userAgent.split(')')[0].split('(')[1] || "Known Device"}
+                            {session.userAgent || "Known Device"}
                           </h4>
                           {session.isCurrent && (
                             <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold uppercase tracking-wider rounded-full border border-emerald-200">This Device</span>
@@ -287,9 +277,7 @@ export default function SecurityPage() {
           </section>
         </div>
 
-        {/* Sidebar Status Column */}
         <div className="space-y-8">
-          {/* 2FA Card */}
           <div className="bg-[#010a26] rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#960c1d]/20 blur-[60px] rounded-full group-hover:scale-150 transition-transform duration-700" />
             <ShieldAlert className="w-12 h-12 text-[#960c1d] mb-8 relative z-10" />
@@ -310,7 +298,6 @@ export default function SecurityPage() {
             </Button>
           </div>
 
-          {/* Security Pulse Checklist */}
           <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-2xl shadow-slate-200/30">
             <h3 className="text-sm font-semibold text-[#010a26] uppercase tracking-widest mb-8">Security Pulse</h3>
             <ul className="space-y-6">
@@ -338,7 +325,6 @@ export default function SecurityPage() {
         </div>
       </div>
 
-      {/* 2FA Setup Modal */}
       <AnimatePresence>
         {is2FAModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -397,50 +383,10 @@ export default function SecurityPage() {
                   <h2 className="text-2xl font-semibold text-[#010a26] mb-2">You&apos;re Protected!</h2>
                   <p className="text-sm text-slate-500 font-medium mb-8">Save these recovery codes. They are the only way to access your account if you lose your phone.</p>
                   
-                  <div id="recovery-codes-box" className="grid grid-cols-2 gap-3 mb-8 bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100">
+                  <div className="grid grid-cols-2 gap-3 mb-8 bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100">
                     {recoveryCodes.map(code => (
                       <div key={code} className="bg-white p-2.5 rounded-lg text-[10px] font-mono font-bold text-slate-600 border border-slate-100 shadow-sm">{code}</div>
                     ))}
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
-                    <button 
-                      onClick={() => {
-                        const content = `NEXORA ID RECOVERY CODES\n\n${recoveryCodes.join('\n')}\n\nKeep these codes safe.`;
-                        const blob = new Blob([content], { type: 'text/plain' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'nexora-recovery-codes.txt';
-                        a.click();
-                        showToast("Codes downloaded", "success");
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-[#010a26] text-xs font-semibold rounded-xl transition-all"
-                    >
-                      <Smartphone className="w-4 h-4 rotate-180" /> Download
-                    </button>
-                    <button 
-                      onClick={() => {
-                        const printWindow = window.open('', '_blank');
-                        printWindow?.document.write(`
-                          <html>
-                            <head><title>Nexora ID Recovery Codes</title></head>
-                            <body style="font-family: sans-serif; padding: 40px; text-align: center;">
-                              <h1>Nexora ID Recovery Codes</h1>
-                              <p>Keep these codes in a safe place.</p>
-                              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
-                                ${recoveryCodes.map(c => `<div style="padding: 10px; border: 1px solid #ccc; font-family: monospace;">${c}</div>`).join('')}
-                              </div>
-                            </body>
-                          </html>
-                        `);
-                        printWindow?.document.close();
-                        printWindow?.print();
-                      }}
-                      className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-[#010a26] text-xs font-semibold rounded-xl transition-all"
-                    >
-                      <Loader2 className="w-4 h-4" /> Print
-                    </button>
                   </div>
 
                   <Button onClick={() => setIs2FAModalOpen(false)} className="w-full h-12 bg-[#010a26] text-white rounded-xl font-semibold">I&apos;ve Saved Them</Button>
@@ -450,18 +396,6 @@ export default function SecurityPage() {
           </div>
         )}
       </AnimatePresence>
-    </div>
-  );
-}
-
-function FeatureItem({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
-  return (
-    <div className="flex flex-col items-center text-center gap-4 flex-1">
-      <div className="flex-shrink-0 w-11 h-11 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 text-white/80 transition-all">{icon}</div>
-      <div>
-        <h3 className="text-[13px] font-semibold text-white mb-2 tracking-tight">{title}</h3>
-        <p className="text-white/40 text-[11px] leading-relaxed line-clamp-2 font-medium">{desc}</p>
-      </div>
     </div>
   );
 }
