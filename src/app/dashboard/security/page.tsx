@@ -327,19 +327,19 @@ export default function SecurityPage() {
 
       <AnimatePresence>
         {is2FAModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIs2FAModalOpen(false)}
-              className="absolute inset-0 bg-[#010a26]/60 backdrop-blur-xl"
+              className="fixed inset-0 bg-[#010a26]/80 backdrop-blur-xl"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-[2.5rem] p-10 shadow-[0_30px_100px_rgba(1,10,38,0.3)] overflow-hidden"
+              className="relative w-full max-w-md bg-white rounded-[2.5rem] p-10 shadow-[0_30px_100px_rgba(1,10,38,0.5)] overflow-hidden my-auto"
             >
               {twoFactorStep === 'start' && (
                 <div className="text-center">
