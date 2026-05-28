@@ -97,7 +97,7 @@ export default function ConnectedAppsPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-slate-200/40 border border-slate-100 flex flex-col group relative overflow-hidden transition-all hover:shadow-3xl hover:-translate-y-1 duration-500"
+              className="bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-2xl shadow-slate-200/40 border border-slate-100 flex flex-col group relative overflow-hidden transition-all hover:shadow-3xl hover:-translate-y-1 duration-500"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#960c1d]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               
@@ -145,7 +145,7 @@ export default function ConnectedAppsPage() {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="col-span-full text-center py-32 bg-white rounded-[3rem] border-2 border-dashed border-slate-200"
+            className="col-span-full text-center px-6 py-20 sm:py-32 bg-white rounded-[3rem] border-2 border-dashed border-slate-200"
           >
             <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
               <Shield className="w-10 h-10 text-slate-300" />
@@ -157,7 +157,7 @@ export default function ConnectedAppsPage() {
       </div>
 
       {/* Security Banner */}
-      <div className="bg-[#010a26] rounded-[3rem] p-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-2xl">
+      <div className="bg-[#010a26] rounded-[3rem] p-6 sm:p-10 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 w-64 h-64 bg-[#960c1d]/10 blur-[100px] rounded-full" />
         <div className="w-20 h-20 bg-white/10 backdrop-blur-xl rounded-3xl flex items-center justify-center shrink-0 border border-white/10">
           <AlertCircle className="w-10 h-10 text-white" />
@@ -185,7 +185,7 @@ export default function ConnectedAppsPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-[3rem] p-10 shadow-[0_30px_100px_rgba(1,10,38,0.3)]"
+              className="relative w-full max-w-md bg-white rounded-[3rem] p-6 sm:p-10 shadow-[0_30px_100px_rgba(1,10,38,0.3)]"
             >
               <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mb-8">
                 <Trash2 className="w-10 h-10 text-[#960c1d]" />

@@ -136,7 +136,7 @@ export default function SettingsPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
+          className="bg-white rounded-[2.5rem] border border-slate-100 p-6 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
         >
           <div className="flex items-center gap-4 mb-10">
             <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center">
@@ -220,7 +220,7 @@ export default function SettingsPage() {
           <motion.section
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
+            className="bg-white rounded-[2.5rem] border border-slate-100 p-6 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
           >
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center">
@@ -253,7 +253,7 @@ export default function SettingsPage() {
           <motion.section
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bg-white rounded-[2.5rem] border border-slate-100 p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
+            className="bg-white rounded-[2.5rem] border border-slate-100 p-6 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.02)]"
           >
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center">

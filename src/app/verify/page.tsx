@@ -9,6 +9,7 @@ import { ArrowLeft, ShieldCheck, Mail, Globe, Zap, Loader2, RefreshCw } from "lu
 import { OTPInput } from "@/components/ui/OTPInput";
 import { apiFetch } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { safeRedirectUrl } from "@/lib/redirect";
 
 function VerifyContent() {
   const router = useRouter();
@@ -20,7 +21,8 @@ function VerifyContent() {
   const [timer, setTimer] = React.useState(0);
 
   const email = searchParams.get("email") || "your email";
-  const returnTo = searchParams.get("returnTo");
+  // Validate returnTo to prevent open-redirect attacks
+  const returnTo = safeRedirectUrl(searchParams.get("returnTo"), '/dashboard/apps');
 
   React.useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -43,7 +45,8 @@ function VerifyContent() {
       setIsSuccess(true);
       showToast("Email verified successfully", "success");
       setTimeout(() => {
-        window.location.href = returnTo || '/dashboard/apps';
+        // Safe: returnTo has already been validated as same-origin
+        router.push(returnTo);
       }, 2000);
     } catch (err: any) {
       showToast(err.message, "error");
@@ -117,7 +120,7 @@ function VerifyContent() {
       </motion.div>
 
       {/* Right Section: Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-white overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

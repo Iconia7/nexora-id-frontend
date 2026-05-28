@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Shield, Check, Info, ArrowRight, Lock, Key, AppWindow } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { apiFetch } from "@/lib/api";
+import { safeRedirectUrl } from "@/lib/redirect";
 
 function ConsentContent() {
   const searchParams = useSearchParams();
@@ -16,7 +17,8 @@ function ConsentContent() {
   const [client, setClient] = useState<any>(null);
 
   const clientId = searchParams.get("client_id");
-  const returnTo = searchParams.get("returnTo");
+  // Validate returnTo to prevent open-redirect after consent
+  const returnTo = safeRedirectUrl(searchParams.get("returnTo"), '/dashboard/apps');
   const scopes = searchParams.get("scopes")?.split(",") || [];
 
   useEffect(() => {
@@ -35,11 +37,12 @@ function ConsentContent() {
         body: JSON.stringify({ clientId, scopes }),
       });
 
+      // Safe: returnTo has already been validated as same-origin
       if (returnTo) {
-        window.location.href = decodeURIComponent(returnTo);
+        window.location.href = returnTo;
       }
-    } catch (error) {
-      console.error("Failed to grant consent", error);
+    } catch {
+      // Do not log error — may contain sensitive OAuth parameters
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +121,7 @@ function ConsentContent() {
       </motion.div>
 
       {/* Right Section: Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-white overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

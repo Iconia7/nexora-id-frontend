@@ -7,6 +7,7 @@ import * as z from "zod";
 import { Lock, ShieldCheck, Smartphone, Monitor, Clock, CheckCircle2, MoreVertical, X, AlertTriangle, ShieldAlert, Loader2, QrCode, Key } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PasswordStrength } from "@/components/ui/PasswordStrength";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -14,7 +15,11 @@ import { useToast } from "@/components/ui/Toast";
 
 const passwordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(8, "New password must be at least 8 characters"),
+  newPassword: z.string()
+    .min(8, "New password must be at least 8 characters")
+    .regex(/[A-Z]/, "Must contain at least one uppercase letter")
+    .regex(/[0-9]/, "Must contain at least one number")
+    .regex(/[^A-Za-z0-9]/, "Must contain at least one special character"),
   confirmPassword: z.string().min(1, "Please confirm your new password"),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Passwords don't match",
@@ -49,9 +54,10 @@ export default function SecurityPage() {
   const [verificationCode, setVerificationCode] = React.useState("");
   const [recoveryCodes, setRecoveryCodes] = React.useState<string[]>([]);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<PasswordFormValues>({
+  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<PasswordFormValues>({
     resolver: zodResolver(passwordSchema),
   });
+  const newPasswordValue = watch('newPassword');
 
   const fetchData = React.useCallback(async () => {
     try {
@@ -155,7 +161,7 @@ export default function SecurityPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-2 space-y-10">
-          <section className="bg-white rounded-[2.5rem] p-10 shadow-2xl shadow-slate-200/40 border border-slate-100 relative overflow-hidden">
+          <section className="bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl shadow-slate-200/40 border border-slate-100 relative overflow-hidden">
             <div className="flex items-center space-x-5 mb-10">
               <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center">
                 <Lock className="w-7 h-7 text-[#960c1d]" />
@@ -188,6 +194,7 @@ export default function SecurityPage() {
                     {...register("newPassword")}
                   />
                   {errors.newPassword && <p className="text-xs text-red-500 mt-1 ml-1">{errors.newPassword.message}</p>}
+                  <PasswordStrength password={newPasswordValue} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[13px] font-medium text-slate-700 ml-1">Confirm New Password</label>
@@ -298,7 +305,7 @@ export default function SecurityPage() {
             </Button>
           </div>
 
-          <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-2xl shadow-slate-200/30">
+          <div className="bg-white rounded-[2.5rem] p-6 sm:p-10 border border-slate-100 shadow-2xl shadow-slate-200/30">
             <h3 className="text-sm font-semibold text-[#010a26] uppercase tracking-widest mb-8">Security Pulse</h3>
             <ul className="space-y-6">
               {[
@@ -339,7 +346,7 @@ export default function SecurityPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-white rounded-[2.5rem] p-10 shadow-[0_30px_100px_rgba(1,10,38,0.5)] overflow-hidden my-auto"
+              className="relative w-full max-w-md bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-[0_30px_100px_rgba(1,10,38,0.5)] overflow-hidden my-auto"
             >
               {twoFactorStep === 'start' && (
                 <div className="text-center">
@@ -383,10 +390,43 @@ export default function SecurityPage() {
                   <h2 className="text-2xl font-semibold text-[#010a26] mb-2">You&apos;re Protected!</h2>
                   <p className="text-sm text-slate-500 font-medium mb-8">Save these recovery codes. They are the only way to access your account if you lose your phone.</p>
                   
-                  <div className="grid grid-cols-2 gap-3 mb-8 bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100">
+                  <div className="grid grid-cols-2 gap-3 mb-6 bg-slate-50 p-6 rounded-[1.5rem] border border-slate-100">
                     {recoveryCodes.map(code => (
                       <div key={code} className="bg-white p-2.5 rounded-lg text-[10px] font-mono font-bold text-slate-600 border border-slate-100 shadow-sm">{code}</div>
                     ))}
+                  </div>
+
+                  {/* Copy & Download actions */}
+                  <div className="flex gap-3 mb-6">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(recoveryCodes.join('\n'));
+                      }}
+                      className="flex-1 h-10 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-600 uppercase tracking-widest transition-colors"
+                    >
+                      Copy All
+                    </button>
+                    <button
+                      onClick={() => {
+                        const content = [
+                          'Nexora ID Recovery Codes',
+                          'Generated: ' + new Date().toLocaleString(),
+                          'Keep these codes safe. Each code can only be used once.',
+                          '',
+                          ...recoveryCodes,
+                        ].join('\n');
+                        const blob = new Blob([content], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'nexora-id-recovery-codes.txt';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      className="flex-1 h-10 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-600 uppercase tracking-widest transition-colors"
+                    >
+                      Download .txt
+                    </button>
                   </div>
 
                   <Button onClick={() => setIs2FAModalOpen(false)} className="w-full h-12 bg-[#010a26] text-white rounded-xl font-semibold">I&apos;ve Saved Them</Button>

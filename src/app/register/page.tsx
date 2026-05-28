@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/Input";
 import { PasswordStrength } from "@/components/ui/PasswordStrength";
 import { apiFetch } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { safeRedirectUrl } from "@/lib/redirect";
 import Link from "next/link";
 
 const registerSchema = z.object({
@@ -37,7 +38,9 @@ function RegisterContent() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
 
-  const returnTo = searchParams.get("returnTo");
+  const rawReturnTo = searchParams.get("returnTo");
+  // Validate returnTo to prevent open-redirect attacks
+  const returnTo = safeRedirectUrl(rawReturnTo);
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -114,7 +117,7 @@ function RegisterContent() {
       </motion.div>
 
       {/* Right Section: Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-white overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

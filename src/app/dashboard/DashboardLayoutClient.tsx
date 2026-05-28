@@ -35,8 +35,8 @@ export default function DashboardLayoutClient({
     try {
       const data = await apiFetch("/api/settings/profile");
       setUser(data);
-    } catch (error) {
-      console.error("Failed to fetch profile");
+    } catch {
+      // Silently fail — user will see empty state
     } finally {
       setIsLoading(false);
     }
@@ -46,8 +46,8 @@ export default function DashboardLayoutClient({
     try {
       const data = await apiFetch("/api/dashboard/notifications");
       setNotifications(data);
-    } catch (error) {
-      console.error("Failed to fetch notifications");
+    } catch {
+      // Silently fail
     }
   }, []);
 
@@ -62,8 +62,8 @@ export default function DashboardLayoutClient({
       try {
         const results = await apiFetch(`/api/dashboard/search?q=${encodeURIComponent(searchQuery)}`);
         setSearchResults(results);
-      } catch (error) {
-        console.error("Search failed");
+      } catch {
+        // Silently fail — search results stay empty
       } finally {
         setIsSearchLoading(false);
       }
@@ -92,8 +92,8 @@ export default function DashboardLayoutClient({
     try {
       await apiFetch("/api/dashboard/notifications/read", { method: "POST" });
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    } catch (error) {
-      console.error("Failed to mark notifications as read");
+    } catch {
+      // Silently fail
     }
   };
 
@@ -101,8 +101,9 @@ export default function DashboardLayoutClient({
     try {
       await apiFetch("/auth/logout", { method: "POST" });
       router.push("/login");
-    } catch (error) {
-      console.error("Logout failed");
+    } catch {
+      // Still redirect to login even if logout API fails
+      router.push("/login");
     }
   };
 
@@ -183,12 +184,12 @@ export default function DashboardLayoutClient({
       <main className="lg:pl-72 min-h-screen flex flex-col">
         {/* Intelligence Header */}
         <header className="sticky top-0 z-40 h-24 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 lg:px-10 flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1 max-w-xl relative">
+          <div className="flex items-center gap-4 flex-1 max-w-[160px] sm:max-w-xl relative">
             <div className="relative w-full group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#960c1d] transition-colors" />
               <input
                 type="text"
-                placeholder="Search resources, apps or activity..."
+                placeholder="Search..."
                 className="w-full h-12 pl-12 pr-4 bg-slate-50 border border-transparent rounded-2xl text-sm font-medium focus:bg-white focus:border-slate-200 focus:ring-4 focus:ring-[#010a26]/5 transition-all outline-none"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -317,7 +318,7 @@ export default function DashboardLayoutClient({
             </div>
 
             {/* User Profile */}
-            <Link href="/dashboard/settings" className="flex items-center gap-4 pl-4 border-l border-slate-100 group">
+            <Link href="/dashboard/settings" className="hidden sm:flex items-center gap-4 pl-4 border-l border-slate-100 group">
               <div className="hidden sm:flex flex-col items-end">
                 <span className="text-sm font-bold text-[#010a26]">{user?.displayName || "Nexora User"}</span>
                 <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Active Session</span>

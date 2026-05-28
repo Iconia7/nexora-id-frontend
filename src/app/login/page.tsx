@@ -1,11 +1,6 @@
 "use client";
 
 export const dynamic = 'force-dynamic';
-// Note: Title is handled by the parent layout template, but we can override if needed
-// Actually, in Client Components we don't export metadata. We use title inside layout or just rely on default.
-// Wait, I can export metadata from a page.tsx IF IT'S A SERVER COMPONENT. 
-// But these are Client Components ("use client").
-// To set metadata for Client Components, I should use a separate layout.tsx in each folder.
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -13,11 +8,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Mail, ArrowRight, ShieldCheck, Loader2, Key, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, ArrowRight, ShieldCheck, Loader2, Key, Eye, EyeOff, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { apiFetch } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { safeRedirectUrl } from "@/lib/redirect";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -28,21 +24,31 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 import { Suspense } from "react";
 
+type LoginStep = 'credentials' | '2fa' | 'recovery';
+
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
-  const [requires2FA, setRequires2FA] = React.useState(false);
-  const [tempUserId, setTempUserId] = React.useState<string | null>(null);
+  const [step, setStep] = React.useState<LoginStep>('credentials');
   const [twoFactorCode, setTwoFactorCode] = React.useState("");
+  const [recoveryCode, setRecoveryCode] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
 
-  const returnTo = searchParams.get("returnTo");
+  // Validate returnTo on the client to prevent open-redirect attacks.
+  // Only same-origin paths are allowed; anything external falls back to /dashboard/apps.
+  const rawReturnTo = searchParams.get("returnTo");
+  const returnTo = safeRedirectUrl(rawReturnTo);
 
   const { register, handleSubmit, formState: { errors }, getValues } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
+
+  const redirectAfterLogin = () => {
+    // Use router.push for internal same-origin paths to avoid full page reloads.
+    router.push(returnTo);
+  };
 
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
@@ -53,23 +59,20 @@ function LoginContent() {
       });
 
       if (response.requires2FA) {
-        setRequires2FA(true);
-        setTempUserId(response.tempUserId);
+        // SECURITY: The backend stores userId in the session.
+        // We do NOT store or send userId — just move to the 2FA step.
+        setStep('2fa');
         showToast("Two-factor authentication required", "info");
         return;
       }
 
       showToast("Signed in successfully", "success");
-
-      if (returnTo) {
-        window.location.href = returnTo;
-      } else {
-        router.push('/dashboard/apps');
-      }
+      redirectAfterLogin();
     } catch (error: any) {
       if (error.unverified) {
         showToast(error.message, "error");
-        router.push(`/verify?email=${encodeURIComponent(data.email)}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}`);
+        const verifyUrl = `/verify?email=${encodeURIComponent(getValues('email'))}${rawReturnTo ? `&returnTo=${encodeURIComponent(rawReturnTo)}` : ''}`;
+        router.push(verifyUrl);
         return;
       }
       showToast(error.message || "Invalid credentials", "error");
@@ -82,22 +85,34 @@ function LoginContent() {
     if (twoFactorCode.length !== 6) return;
     setIsLoading(true);
     try {
+      // SECURITY: Only send the TOTP token. The backend reads userId from the session.
       await apiFetch('/auth/login/2fa', {
         method: 'POST',
-        body: JSON.stringify({
-          userId: tempUserId,
-          token: twoFactorCode
-        }),
+        body: JSON.stringify({ token: twoFactorCode }),
       });
 
       showToast("Identity verified", "success");
-      if (returnTo) {
-        window.location.href = returnTo;
-      } else {
-        router.push('/dashboard/apps');
-      }
+      redirectAfterLogin();
     } catch (error: any) {
       showToast(error.message || "Invalid 2FA code", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRecoveryLogin = async () => {
+    if (!recoveryCode.trim()) return;
+    setIsLoading(true);
+    try {
+      await apiFetch('/auth/login/recovery-code', {
+        method: 'POST',
+        body: JSON.stringify({ recoveryCode: recoveryCode.trim() }),
+      });
+
+      showToast("Signed in with recovery code", "success");
+      redirectAfterLogin();
+    } catch (error: any) {
+      showToast(error.message || "Invalid recovery code", "error");
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +166,7 @@ function LoginContent() {
       </motion.div>
 
       {/* Right Section: Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-white overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -163,7 +178,7 @@ function LoginContent() {
           </div>
 
           <AnimatePresence mode="wait">
-            {!requires2FA ? (
+            {step === 'credentials' && (
               <motion.div
                 key="login-form"
                 initial={{ opacity: 0, x: -20 }}
@@ -198,7 +213,7 @@ function LoginContent() {
                       </button>
                     </div>
                     <Input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       {...register("password")}
                       error={errors.password?.message}
@@ -222,14 +237,14 @@ function LoginContent() {
                   </div>
                 </form>
 
-
-
                 <p className="text-center text-sm font-medium text-slate-500">
                   New to Nexora?{" "}
                   <button onClick={() => router.push('/register')} className="text-[#960c1d] font-semibold hover:underline underline-offset-4 transition-all">Create Account</button>
                 </p>
               </motion.div>
-            ) : (
+            )}
+
+            {step === '2fa' && (
               <motion.div
                 key="2fa-form"
                 initial={{ opacity: 0, x: 20 }}
@@ -253,7 +268,7 @@ function LoginContent() {
                   <Input
                     placeholder="000 000"
                     value={twoFactorCode}
-                    onChange={(e) => setTwoFactorCode(e.target.value)}
+                    onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
                     className="h-16 text-center text-2xl tracking-[0.5em] font-semibold"
                     maxLength={6}
                     autoFocus
@@ -268,11 +283,67 @@ function LoginContent() {
                     Verify Identity
                   </Button>
 
+                  {/* Recovery code escape hatch */}
                   <button
-                    onClick={() => setRequires2FA(false)}
+                    onClick={() => setStep('recovery')}
+                    className="w-full py-2 text-sm font-semibold text-[#960c1d] hover:text-[#7a0918] transition-all flex items-center justify-center gap-2"
+                  >
+                    <LifeBuoy className="w-4 h-4" />
+                    Use a recovery code instead
+                  </button>
+
+                  <button
+                    onClick={() => setStep('credentials')}
                     className="w-full py-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-all"
                   >
                     Back to Login
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {step === 'recovery' && (
+              <motion.div
+                key="recovery-form"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-10"
+              >
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-amber-50 rounded-3xl flex items-center justify-center mx-auto mb-8">
+                    <LifeBuoy className="w-10 h-10 text-amber-600" />
+                  </div>
+                  <h1 className="text-3xl font-semibold text-[#010a26] mb-3 tracking-tight">Recovery Login</h1>
+                  <p className="text-slate-500 font-medium leading-relaxed">
+                    Enter one of your one-time recovery codes.<br />
+                    <span className="text-amber-600 font-semibold text-sm">Each code can only be used once.</span>
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  <Input
+                    placeholder="XXXX-XXXX-XXXX"
+                    value={recoveryCode}
+                    onChange={(e) => setRecoveryCode(e.target.value)}
+                    className="h-14 text-center font-mono tracking-widest font-semibold uppercase"
+                    autoFocus
+                  />
+
+                  <Button
+                    onClick={handleRecoveryLogin}
+                    className="w-full h-14 bg-amber-600 hover:bg-amber-700 text-white rounded-2xl font-semibold text-base transition-all shadow-xl shadow-amber-900/10"
+                    isLoading={isLoading}
+                    disabled={!recoveryCode.trim()}
+                  >
+                    Sign In with Recovery Code
+                  </Button>
+
+                  <button
+                    onClick={() => setStep('2fa')}
+                    className="w-full py-2 text-sm font-semibold text-slate-400 hover:text-slate-600 transition-all"
+                  >
+                    Back to Authenticator Code
                   </button>
                 </div>
               </motion.div>

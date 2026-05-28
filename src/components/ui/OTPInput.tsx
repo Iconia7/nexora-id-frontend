@@ -35,7 +35,7 @@ export const OTPInput = ({ length = 6, onComplete, disabled }: OTPInputProps) =>
   };
 
   return (
-    <div className="flex gap-3 justify-center">
+    <div className="flex gap-2 sm:gap-3 justify-center">
       {code.map((digit, index) => (
         <input
           key={index}
@@ -47,7 +47,7 @@ export const OTPInput = ({ length = 6, onComplete, disabled }: OTPInputProps) =>
           onChange={(e) => handleChange(e.target.value, index)}
           onKeyDown={(e) => handleKeyDown(e, index)}
           className={cn(
-            "w-12 h-16 text-center text-2xl font-bold rounded-2xl border-2 transition-all outline-none",
+            "w-10 sm:w-12 h-14 sm:h-16 text-center text-xl sm:text-2xl font-bold rounded-xl sm:rounded-2xl border-2 transition-all outline-none",
             digit ? "border-[#960c1d] bg-[#960c1d]/5 text-[#010a26]" : "border-slate-200 bg-slate-50 text-slate-400",
             "focus:border-[#960c1d] focus:ring-4 focus:ring-[#960c1d]/10",
             disabled && "opacity-50 cursor-not-allowed"
